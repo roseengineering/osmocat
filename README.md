@@ -73,4 +73,4 @@ the auto-adjust waterfall colors button to rescale.  The button looks
 like a mountain range landscape. 
  
 
-- (c) copyright 2018 roseengineering
+- Copyright 2018 (c) roseengineering
