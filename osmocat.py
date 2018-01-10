@@ -18,8 +18,6 @@ class queue_sink(gr.hier_block2):
         self.qu = gr.msg_queue(0)
         message_sink = blocks.message_sink(item_size, self.qu, False)
         self.connect(self, message_sink)
-        self.arr = None
-        self.idx = 0
 		
     def next(self):
         msg = self.qu.delete_head()
