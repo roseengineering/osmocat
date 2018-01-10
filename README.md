@@ -5,8 +5,9 @@ osmocat.py
 This repo provides a Python (2.7) gnuradio script named osmocat.py.
 The script sends samples from any gr-osmosdr supported device to 
 standard output.  I created the script namely to connect my AirspyHF+ radio to 
-the Openwebrx software receiver.  At the time of this writing only 
-SDR# and gr-osmosdr clients support the AirspyHF+.
+the Openwebrx software receiver.  At the time of writing 
+SDR# and gr-osmosdr clients support the AirspyHF+, as well as dl9rdz's 
+airspyhf\_rx. [1] 
 
 To use Openwebrx with a particular SDR radio, a command line
 program that can write samples to standard output is required.
@@ -67,10 +68,15 @@ Now to listen to your AirspyHF+, change the variables, for example, to:
     center_freq = 1000000
 
 The AirspyHF+ gr-osmosdr device only supports a sample rate of 768000.
-It also does not support, as I found out, "--mode" or "--gain", which it
-simply ignores.  Note, if the waterfall on Openwebrx is all black, click
+It also does not support, as I found out, "--mode" or "--gain", which 
+the gr-osmosdr implementation ignores.  Note, if the waterfall on Openwebrx is all black, click
 the auto-adjust waterfall colors button to rescale.  The button looks 
 like a mountain range landscape. 
  
-
 - Copyright 2018 (c) roseengineering
+
+Footnotes
+---------
+
+[1] To compile, clone https://github.com/dl9rdz/airspyhf, cd into airspyhf/tools/src and run gcc -o airspyhf\_rx airspyhf\_rx.c -I /usr/local/include/libairspyhf -lairspyhf -lm
+
