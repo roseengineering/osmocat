@@ -29,19 +29,27 @@ class radio_stream(gr.top_block):
 
     def __init__(self, **kw):
         gr.top_block.__init__(self)
+        self.kw = kw
         self.source = source = osmosdr.source(kw['args'])
         self.sink = sink = queue_sink()
-        self.valid_ranges('valid sampling rates', source.get_sample_rates())
-        self.valid_ranges('valid gains', source.get_gain_range())
-        self.valid_ranges('valid frequencies', source.get_freq_range())
+        self.connect(source, sink)
+
+    def initialize(self):
+        kw = self.kw
+        source = self.source
         source.set_center_freq(int(kw['freq'] or 100e6))
         if kw.get('rate') != None: source.set_sample_rate(kw['rate'])
         if kw.get('corr') != None: source.set_freq_corr(kw['corr'])
         if kw.get('gain') != None: source.set_gain(kw['gain'])
         if kw.get('mode') != None: source.set_gain_mode(bool(kw['mode']))
-        self.connect(source, sink)
   
-    def status(self):
+    def print_ranges(self):
+        source = self.source
+        self.print_range('valid sampling rates', source.get_sample_rates())
+        self.print_range('valid gains', source.get_gain_range())
+        self.print_range('valid frequencies', source.get_freq_range())
+
+    def print_status(self):
         source = self.source 
         print('rate = %d' % source.get_sample_rate(), file=sys.stderr)
         print('freq = %d' % source.get_center_freq(), file=sys.stderr)
@@ -49,7 +57,7 @@ class radio_stream(gr.top_block):
         print('gain = %d' % source.get_gain(), file=sys.stderr)
         print('mode = %s' % source.get_gain_mode(), file=sys.stderr)
 
-    def valid_ranges(self, name, r):
+    def print_range(self, name, r):
         print(name + ":", end="", file=sys.stderr)
         if r.empty():
             print(" <none>", file=sys.stderr)
@@ -78,7 +86,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     stream = radio_stream(**args.__dict__)
-    stream.status()
+    stream.print_ranges()
+    stream.initialize()
+    stream.print_status()
     stream.start()
 
     for c in stream:
