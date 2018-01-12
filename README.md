@@ -4,18 +4,18 @@ osmocat.py
 
 This repo provides a Python (2.7) gnuradio script named osmocat.py.
 The script sends samples from any gr-osmosdr supported device to 
-standard output.  I created the script namely to connect my AirspyHF+ radio to 
+standard output.  Basically osmocat.py is rtl\_sdr but for 
+gr-osmosdr devices. 
+
+I created the python script namely to connect a AirspyHF+ radio to 
 the Openwebrx software receiver.  At the time of writing 
 SDR# and gr-osmosdr clients support the AirspyHF+, as well as dl9rdz's 
 airspyhf\_rx. [1] 
 
 To use Openwebrx with a particular SDR radio, a command line
 program that can write samples to standard output is required.
-For example to listen to a RTL-SDR, Openwebrx can use the
-program rtl\_sdr.  In other words osmocat.py is like rtl\_sdr but for
-gr-osmosdr devices. 
-
-To see the script's help screen run:
+For example to listen to a RTL-SDR, Openwebrx normally uses 
+rtl\_sdr, but you can also use osmocat.py:
 
     $ python osmocat.py -h
 
@@ -31,7 +31,7 @@ To see the script's help screen run:
       --gain GAIN  gain (dB)
       --mode MODE  gain mode (0 or 1)
 
-Setting the gain mode to 1 turns on automatic gain.
+    (Note, setting the gain mode to 1 turns on automatic gain.)
 
 To use osmocat.py with Openwebrx add the following lines at
 the end of config\_webrx.py:
