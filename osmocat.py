@@ -6,12 +6,14 @@ from __future__ import print_function
 from gnuradio import gr
 from gnuradio import blocks
 import osmosdr
-import sys, struct, argparse
+import sys, struct, argparse, array
 
 
 class queue_sink(gr.hier_block2):
 
-    def __init__(self):
+    def __init__(self, options):
+        self.word = options['word']
+        self.byte = options['byte']
         item_size = gr.sizeof_gr_complex
         gr.hier_block2.__init__(self, "queue_sink",
             gr.io_signature(1, 1, item_size),
@@ -22,26 +24,35 @@ class queue_sink(gr.hier_block2):
 		
     def next(self):
         msg = self.qu.delete_head()
-        return msg.to_string()
+        data = msg.to_string()
+        if self.word:
+            data = array.array('f', data).tolist()
+            data = [ int(32767 * n)  for n in data ]
+            data = array.array('h', data).tostring()
+        elif self.byte: 
+            data = array.array('f', data).tolist()
+            data = [ int(127 * n) + 128 for n in data ]
+            data = array.array('B', data).tostring()
+        return data
 
 	
 class radio_stream(gr.top_block):
 
-    def __init__(self, **kw):
+    def __init__(self, options):
         gr.top_block.__init__(self)
-        self.kw = kw
-        self.source = source = osmosdr.source(kw['args'])
-        self.sink = sink = queue_sink()
+        self.options = options
+        self.source = source = osmosdr.source(options['args'])
+        self.sink = sink = queue_sink(options)
         self.connect(source, sink)
 
     def initialize(self):
-        kw = self.kw
+        options = self.options
         source = self.source
-        source.set_center_freq(int(kw['freq'] or 100e6))
-        if kw.get('rate') != None: source.set_sample_rate(kw['rate'])
-        if kw.get('corr') != None: source.set_freq_corr(kw['corr'])
-        if kw.get('gain') != None: source.set_gain(kw['gain'])
-        if kw.get('mode') != None: source.set_gain_mode(bool(kw['mode']))
+        source.set_center_freq(int(options['freq'] or 100e6))
+        if options['rate'] != None: source.set_sample_rate(options['rate'])
+        if options['corr'] != None: source.set_freq_corr(options['corr'])
+        if options['gain'] != None: source.set_gain(options['gain'])
+        if options['auto'] != None: source.set_gain_mode(options['auto'])
   
     def print_ranges(self):
         source = self.source
@@ -55,7 +66,7 @@ class radio_stream(gr.top_block):
         print('freq = %d' % source.get_center_freq(), file=sys.stderr)
         print('corr = %d' % source.get_freq_corr(), file=sys.stderr)
         print('gain = %d' % source.get_gain(), file=sys.stderr)
-        print('mode = %s' % source.get_gain_mode(), file=sys.stderr)
+        print('auto = %s' % source.get_gain_mode(), file=sys.stderr)
 
     def print_range(self, name, r):
         print(name + ":", end="", file=sys.stderr)
@@ -81,17 +92,19 @@ parser.add_argument("--freq", help="center frequency (Hz)", type=float)
 parser.add_argument("--rate", help="sample rate (Hz)", type=float)
 parser.add_argument("--corr", help="freq correction (ppm)", type=float)
 parser.add_argument("--gain", help="gain (dB)", type=float)
-parser.add_argument("--mode", help="gain mode (0 or 1)", type=int)
+parser.add_argument("--auto", help="automatic gain", action="store_true")
+parser.add_argument("--word", help="signed word samples", action="store_true")
+parser.add_argument("--byte", help="unsigned byte samples", action="store_true")
 args = parser.parse_args()
 
-stream = radio_stream(**args.__dict__)
+########################################
+
+stream = radio_stream(args.__dict__)
 stream.print_ranges()
 stream.initialize()
 stream.print_status()
 stream.start()
 
-########################################
-
-for c in stream:
-    sys.stdout.write(c)
+for data in stream:
+    sys.stdout.write(data)
 
