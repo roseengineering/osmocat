@@ -75,22 +75,23 @@ class radio_stream(gr.top_block):
         return self.sink
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--args", help="device arguments", default="")
-    parser.add_argument("--freq", help="center frequency (Hz)", type=float)
-    parser.add_argument("--rate", help="sample rate (Hz)", type=float)
-    parser.add_argument("--corr", help="freq correction (ppm)", type=float)
-    parser.add_argument("--gain", help="gain (dB)", type=float)
-    parser.add_argument("--mode", help="gain mode (0 or 1)", type=int)
-    args = parser.parse_args()
+parser = argparse.ArgumentParser()
+parser.add_argument("--args", help="device arguments", default="")
+parser.add_argument("--freq", help="center frequency (Hz)", type=float)
+parser.add_argument("--rate", help="sample rate (Hz)", type=float)
+parser.add_argument("--corr", help="freq correction (ppm)", type=float)
+parser.add_argument("--gain", help="gain (dB)", type=float)
+parser.add_argument("--mode", help="gain mode (0 or 1)", type=int)
+args = parser.parse_args()
 
-    stream = radio_stream(**args.__dict__)
-    stream.print_ranges()
-    stream.initialize()
-    stream.print_status()
-    stream.start()
+stream = radio_stream(**args.__dict__)
+stream.print_ranges()
+stream.initialize()
+stream.print_status()
+stream.start()
 
-    for c in stream:
-        sys.stdout.write(c)
+########################################
+
+for c in stream:
+    sys.stdout.write(c)
 
