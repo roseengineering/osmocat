@@ -14,6 +14,7 @@ class queue_sink(gr.hier_block2):
     def __init__(self, options):
         self.word = options['word']
         self.byte = options['byte']
+        self.left = options['left']
         item_size = gr.sizeof_gr_complex
         gr.hier_block2.__init__(self, "queue_sink",
             gr.io_signature(1, 1, item_size),
@@ -27,11 +28,15 @@ class queue_sink(gr.hier_block2):
         data = msg.to_string()
         if self.word:
             data = array.array('f', data).tolist()
-            data = [ int(32767 * n)  for n in data ]
+            data = [ int(32768 * n)  for n in data ]
             data = array.array('h', data).tostring()
+        elif self.left:
+            data = array.array('f', data).tolist()
+            data = [ (int(32768 * n) >> 8) + 128 for n in data ]
+            data = array.array('B', data).tostring()
         elif self.byte: 
             data = array.array('f', data).tolist()
-            data = [ int(127 * n) + 128 for n in data ]
+            data = [ int(128 * n) + 128 for n in data ]
             data = array.array('B', data).tostring()
         return data
 
@@ -94,6 +99,7 @@ parser.add_argument("--corr", help="freq correction (ppm)", type=float)
 parser.add_argument("--gain", help="gain (dB)", type=float)
 parser.add_argument("--auto", help="automatic gain", action="store_true")
 parser.add_argument("--word", help="signed word samples", action="store_true")
+parser.add_argument("--left", help="left justify sample", action="store_true")
 parser.add_argument("--byte", help="unsigned byte samples", action="store_true")
 args = parser.parse_args()
 
