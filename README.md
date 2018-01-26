@@ -20,7 +20,7 @@ rtl\_sdr, but you can also use osmocat.py:
     $ python osmocat.py -h
 
     usage: osmocat.py [-h] [--args ARGS] [--freq FREQ] [--rate RATE] [--corr CORR]
-                      [--gain GAIN] [--mode MODE]
+                      [--gain GAIN] [--auto] [--word] [--left] [--byte]
 
     optional arguments:
       -h, --help   show this help message and exit
@@ -29,9 +29,14 @@ rtl\_sdr, but you can also use osmocat.py:
       --rate RATE  sample rate (Hz)
       --corr CORR  freq correction (ppm)
       --gain GAIN  gain (dB)
-      --mode MODE  gain mode (0 or 1)
+      --auto       automatic gain
+      --word       signed word samples
+      --left       left justify sample
+      --byte       unsigned byte samples
 
-    (Note, setting the gain mode to 1 turns on automatic gain.)
+By default osmocat outputs raw 32-bit floating point IQ samples.
+Use the --word option to output raw signed word IQ samples.
+Or use the --byte option to output raw unsigned byte IQ samples.
 
 To use osmocat.py with Openwebrx add the following lines at
 the end of config\_webrx.py:
@@ -60,18 +65,13 @@ gr-osmosdr radio found, device\_args can be set to:
 
     device_args = ""
 
-Now to listen to your AirspyHF+, change the variables, for example, to:
+Now to listen to your AirspyHF+[2], change the variables, for example, to:
 
     device_args = "airspyhf=0"
     gain_mode = 0
     samp_rate = 768000
     center_freq = 1000000
 
-The AirspyHF+ gr-osmosdr device only supports a sample rate of 768000.
-It also does not support, as I found out, "--mode" or "--gain", which 
-the gr-osmosdr implementation ignores.  Note, if the waterfall on Openwebrx is all black, click
-the auto-adjust waterfall colors button to rescale.  The button looks 
-like a mountain range landscape. 
  
 - Copyright 2018 (c) roseengineering
 
@@ -79,4 +79,10 @@ Footnotes
 ---------
 
 [1] To compile, clone https://github.com/dl9rdz/airspyhf, cd into airspyhf/tools/src and run gcc -o airspyhf\_rx airspyhf\_rx.c -I /usr/local/include/libairspyhf -lairspyhf -lm
+
+[2] The AirspyHF+ gr-osmosdr device only supports a sample rate of 768000.
+It also does not support, as I found out, "--auto" or "--gain", which 
+the gr-osmosdr implementation ignores.  Note, if the waterfall on Openwebrx is all black, click
+the auto-adjust waterfall colors button to rescale.  The button looks 
+like a mountain range landscape. 
 
