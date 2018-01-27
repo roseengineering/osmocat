@@ -6,27 +6,22 @@ from __future__ import print_function
 from gnuradio import gr
 from gnuradio import blocks
 import osmosdr
-import sys, struct, argparse, array
+import sys, struct, argparse
+import numpy as np
 
 
 def cast_stream(buf, byte=False, word=False, left=False):
-    try:
-        if word:
-            data = array.array('f', buf).tolist()
-            data = [ int(32768 * n)  for n in data ]
-            buf = array.array('h', data).tostring()
-        elif left:
-            data = array.array('f', buf).tolist()
-            data = [ (int(32768 * n) >> 8) + 128 for n in data ]
-            buf = array.array('B', data).tostring()
-        elif byte:
-            data = array.array('f', buf).tolist()
-            data = [ int(128 * n) + 128 for n in data ]
-            buf = array.array('B', data).tostring()
-        return buf
-    except:
-        print('sample value peaks out of range', file=sys.stderr)
-        return ""
+    data = np.ndarray(shape=(len(buf)/4,), dtype='f', buffer=buf)
+    if word:
+        data = data * 32768
+        buf = data.astype('h').tobytes()
+    elif left:
+        data = data * 32768 + 128
+        buf = data.astype('B').tobytes()
+    elif byte:
+        data = data * 128 + 128
+        buf = data.astype('B').tobytes()
+    return buf
 
 
 class queue_sink(gr.hier_block2):
