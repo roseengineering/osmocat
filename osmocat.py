@@ -9,9 +9,17 @@ import osmosdr
 import sys, struct, argparse
 import numpy as np
 
+tick = 0
 
-def cast_stream(buf, byte=False, word=False, left=False):
+
+def cast_stream(buf, byte=False, word=False, left=False, peak=False):
     data = np.ndarray(shape=(len(buf)/4,), dtype='f', buffer=buf)
+    if peak:
+        global tick
+        n = max(abs(data.min()), abs(data.max()))
+        n = 20 * np.log10(n + .0000000001)
+        print("%6.1f dBFS (peak) %s " % (n, "/-\|"[tick % 4]), file=sys.stderr, end='\r') 
+        tick += 1
     if word:
         data = data * 32768
         buf = data.astype('h').tobytes()
@@ -96,22 +104,37 @@ parser.add_argument("--freq", help="center frequency (Hz)", type=float)
 parser.add_argument("--rate", help="sample rate (Hz)", type=float)
 parser.add_argument("--corr", help="freq correction (ppm)", type=float)
 parser.add_argument("--gain", help="gain (dB)", type=float)
+parser.add_argument("--peak", help="show peak values in dBFS", action="store_true")
 parser.add_argument("--auto", help="turn on automatic gain", action="store_true")
 parser.add_argument("--word", help="signed word samples", action="store_true")
 parser.add_argument("--left", help="left justified unsigned byte samples", action="store_true")
 parser.add_argument("--byte", help="unsigned byte samples", action="store_true")
+parser.add_argument("--output", help="output file to save 32-bit float samples")
 args = parser.parse_args()
 
 ########################################
 
+# start stream
 stream = radio_stream(args.__dict__)
 stream.print_ranges()
 stream.initialize()
 stream.print_status()
 stream.start()
 
-for data in stream:
-    
-    data = cast_stream(data, byte=args.byte, word=args.word, left=args.left)
-    sys.stdout.write(data)
+output_file = None
+if args.output:
+    output_file = open(args.output, "wb")
+
+try:
+    for data in stream:
+        if output_file:
+            output_file.write(data)
+        data = cast_stream(data, byte=args.byte, word=args.word, left=args.left, peak=args.peak)
+        sys.stdout.write(data)
+except KeyboardInterrupt:
+    print("control-c caught, closing server", file=sys.stderr)
+
+if output_file:
+    print('closing file %s' % args.output, file=sys.stderr)
+    output_file.close()
 

@@ -29,14 +29,22 @@ rtl\_sdr, but you can also use osmocat.py:
       --rate RATE  sample rate (Hz)
       --corr CORR  freq correction (ppm)
       --gain GAIN  gain (dB)
+      --peak       show peak values in dBFS
       --auto       automatic gain
       --word       signed word samples
       --left       left justify sample
       --byte       unsigned byte samples
+      --output OUTPUT  output file to save 32-bit float samples
+
 
 By default osmocat outputs raw 32-bit floating point IQ samples.
 Use the --word option to output raw signed word IQ samples.
 Or use the --byte option to output raw unsigned byte IQ samples.
+
+Use --output to write the raw 32-bit floating point IQ stream
+to a file.
+
+Use --peak to print peak VU meter information to stderr.
 
 To use osmocat.py with Openwebrx add the following lines at
 the end of config\_webrx.py:
