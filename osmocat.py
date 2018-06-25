@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python2.7
 # Copyright (c) 2018 roseengineering
 
 from __future__ import print_function
